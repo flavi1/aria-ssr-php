@@ -1,0 +1,26 @@
+{
+    "name": "ariaml/aria-ssr-php",
+    "description": "AriaML SSR Polyfill for PHP - Provides Request, Response, and Document orchestration for AriaML fluid navigation.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Guillon Flavien"
+        }
+    ],
+    "require": {
+        "php": ">=8.0"
+    },
+    "require-dev": {
+        "psr/http-message": "^1.0|^2.0",
+        "guzzlehttp/psr7": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "AriaML\\": "src/"
+        }
+    },
+    "suggest": {
+        "psr/http-message-implementation": "To use AriaMLResponseFactory with PSR-7 frameworks (Slim, CakePHP, etc.)"
+    }
+}
