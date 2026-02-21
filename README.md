@@ -54,7 +54,7 @@ The server reacts specifically to the following headers:
 | `Accept` | `text/aria-ml-fragment` | Highest priority: requests a native fragment rendering. |
 | `nav-cache` | `JSON Array` | List of DOM keys already present in the client's cache. |
 | `ariaml-force-html` | `boolean` | If true, forces `text/html` Content-Type (Web Extensions). |
-| `Vary` (Response) | `Accept, nav-cache` | Mandatory for browser and CDN cache isolation. |
+| `Vary` (Response) | `Accept, nav-cache` | Allow browser and CDN cache isolation. |
 
 ---
 
@@ -92,12 +92,17 @@ $respFactory = new AriaMLResponseFactory();
 $respFactory->applyTo($reqFactory, $doc);
 
 // 3. Render stream
-echo $doc->startTag();
+echo $doc->startTag(['nav-base-url' => '/']);
 ?>
 
     <script type="application/ld+json" nav-slot="dynamic-definition">
         <?= $doc->consumeDefinition(['name', 'inLanguage']); ?>
     </script>
+	<?php if (!$reqFactory->isFragment()): ?>
+    <script type="application/ld+json">
+        <?= $doc->consumeDefinition(); // tout le reste ?>
+    </script>
+	<?php endif; ?>
 
     <main nav-slot="content">
         <?php if ($reqFactory->clientHasCache('main-view')): ?>
@@ -117,7 +122,7 @@ echo $doc->endTag();
 
 ## 6. Security and Integrity
 
-The `navigationBaseUrl` defines the trust zone. Any navigation exiting this origin unloads the AriaML context to return to a classic navigation mode. This ensures that the fragment's slot structure and the document remain consistent, and prevents an external domain from taking control of the document.
+The `nav-base-url` attribute on the root element `aria-ml` defines the trusted zone. Any navigation exiting this origin unloads the AriaML context to return to a classic navigation mode. This ensures that the fragment's slot structure and the document remain consistent, and prevents an external domain from taking control of the document.
 
 ---
 
@@ -179,7 +184,7 @@ Le serveur réagit spécifiquement aux en-têtes suivants :
 | `Accept` | `text/aria-ml-fragment` | Priorité maximale : demande un rendu natif de fragment. |
 | `nav-cache` | `JSON Array` | Liste des clés DOM déjà présentes dans le cache du client. |
 | `ariaml-force-html` | `boolean` | Si vrai, force le Content-Type `text/html` (Extensions Web). |
-| `Vary` (Réponse) | `Accept, nav-cache` | Obligatoire pour l'isolation du cache navigateur et CDN. |
+| `Vary` (Réponse) | `Accept, nav-cache` | Permet l'isolation du cache navigateur et CDN. |
 
 ---
 
@@ -217,12 +222,17 @@ $respFactory = new AriaMLResponseFactory();
 $respFactory->applyTo($reqFactory, $doc);
 
 // 3. Rendu du flux
-echo $doc->startTag();
+echo $doc->startTag(['nav-base-url' => '/']);
 ?>
 
     <script type="application/ld+json" nav-slot="dynamic-definition">
         <?= $doc->consumeDefinition(['name', 'inLanguage']); ?>
     </script>
+	<?php if (!$reqFactory->isFragment()): ?>
+    <script type="application/ld+json">
+        <?= $doc->consumeDefinition(); // tout le reste ?>
+    </script>
+	<?php endif; ?>
 
     <main nav-slot="content">
         <?php if ($reqFactory->clientHasCache('main-view')): ?>
@@ -242,7 +252,7 @@ echo $doc->endTag();
 
 ## 6. Sécurité et Intégrité
 
-La propriété `navigationBaseUrl` définit la zone de confiance. Toute navigation sortant de cette origine décharge le contexte AriaML pour revenir à un mode de navigation classique. Cela garantit que la structure des slots du fragment et du document reste cohérente, et empêche un domaine externe de prendre le contrôle du document.
+L'attribut `nav-base-url` sur l'élément racine `aria-ml` définit la zone de confiance. Toute navigation sortant de cette origine décharge le contexte AriaML pour revenir à un mode de navigation classique. Cela garantit que la structure des slots du fragment et du document reste cohérente, et empêche un domaine externe de prendre le contrôle du document.
 
 ---
 
