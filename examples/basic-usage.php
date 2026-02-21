@@ -17,7 +17,7 @@ $respFactory = new AriaMLResponseFactory();
 $respFactory->applyTo($reqFactory, $doc);
 
 // 3. Rendu (Le document sait maintenant s'il doit être un fragment ou non)
-echo $doc->startTag(); 
+echo $doc->startTag(['nav-base-url' => '/']); 
 ?>
 
     <script type="application/ld+json" nav-slot="dynamic-definition">

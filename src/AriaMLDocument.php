@@ -162,7 +162,18 @@ class AriaMLDocument {
 		return $this->renderDefinitionHtmlHead();	// todo add appearance
 	}
     
-    function startTag() {
+    private function renderAttributes($attrs) {
+        if (empty($attrs) || !is_array($attrs)) return '';
+        $html = '';
+        foreach ($attrs as $key => $value) {
+            $clean_key = preg_replace('/[^a-zA-Z0-9-]/', '', $key);
+            $clean_val = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+            $html .= " {$clean_key}=\"{$clean_val}\"";
+        }
+        echo $html;
+    }
+    
+    function startTag($attrs = []) {
 		$wrapper = '';
 		if(!$this->isFragment && $this->expectedHtml)
 			$wrapper = "<!DOCTYPE html>\n<html lang="{$lang}" dir="{$dir}">\n<head data-ssr>".$this->renderHtmlHead()."\n</head>\n<body>";
@@ -171,9 +182,9 @@ class AriaMLDocument {
 				"\n".'<style>aria-ml .aria-ml-fallback {display: none;}</style>'.
 				"\n".'<div class="aria-ml-fallback">Loading...</div>';	// = Html support
 			
-			return $wrapper.'<aria-ml-fragment>';
+			return $wrapper.'<aria-ml-fragment'.$this->renderAttributes($attrs).'>';
 		}
-		return $wrapper.'<aria-ml>';
+		return $wrapper.'<aria-ml'.$this->renderAttributes($attrs).'>';
 	}
 	
     function endTag() {

@@ -38,7 +38,7 @@ foreach ($preparedResponse->getHeaders() as $name => $values) {
     }
 }
 
-echo $doc->startTag();
+echo $doc->startTag(['nav-base-url' => '/']);
 ?>
 
     <script type="application/ld+json" nav-slot="dynamic-definition">

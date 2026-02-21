@@ -41,7 +41,7 @@ $preparedResponse = $respFactory->applyTo($reqFactory, $doc);
 // contient les bons headers (Content-Type, Status 206, etc.)
 // ---------------------------------------------------------
 
-echo $doc->startTag();
+echo $doc->startTag(['nav-base-url' => '/']);
 ?>
     <script type="application/ld+json" nav-slot="dynamic-definition">
         <?= $doc->consumeDefinition(['name', 'inLanguage', 'direction']);	//dynamique, actualisé à chaque changement de contexte ?>
