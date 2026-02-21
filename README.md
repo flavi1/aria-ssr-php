@@ -92,7 +92,7 @@ $respFactory = new AriaMLResponseFactory();
 $respFactory->applyTo($reqFactory, $doc);
 
 // 3. Render stream
-echo $doc->startTag();
+echo $doc->startTag(['nav-base-url' => '/']);
 ?>
 
     <script type="application/ld+json" nav-slot="dynamic-definition">
@@ -222,7 +222,7 @@ $respFactory = new AriaMLResponseFactory();
 $respFactory->applyTo($reqFactory, $doc);
 
 // 3. Rendu du flux
-echo $doc->startTag();
+echo $doc->startTag(['nav-base-url' => '/']);
 ?>
 
     <script type="application/ld+json" nav-slot="dynamic-definition">
