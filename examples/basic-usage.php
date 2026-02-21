@@ -12,6 +12,24 @@ $doc = new AriaMLDocument([
     "csrfToken" => "token-123"
 ]);
 
+// Ajout de métadonnées OpenGraph (properties) et classiques (metadatas)
+$doc->set('properties', ['og:type' => 'product', 'og:image' => '/assets/shoes.jpg']);
+$doc->set('metadatas', ['robots' => 'index, follow']);
+
+// Ajout de ressources thématiques avec le nouveau système de PRELOAD
+$doc->addStyle(null, [
+    'src' => '/assets/themes/dark-mode.css',
+    'theme' => 'dark',
+    'preload' => true, // Sera rendu par $this->renderPreloadStyles()
+    'media' => '(prefers-color-scheme: dark)'
+], 'appearance');
+
+$doc->addStyle(null, [
+    'src' => '/assets/icons/main-pack.icons+json',
+    'type' => 'icons+json',
+    'preload' => true
+], 'appearance');
+
 // 2. Synchronisation globale (Headers + Document state)
 $respFactory = new AriaMLResponseFactory();
 $respFactory->applyTo($reqFactory, $doc);
@@ -29,6 +47,7 @@ echo $doc->startTag(['nav-base-url' => '/']);
     </script>
 	<?php endif; ?>
 
+	<?= $doc->renderStyles(); ?>
 
     <main nav-slot="content">
         <?php if ($reqFactory->clientHasCache('main-view')): ?>
