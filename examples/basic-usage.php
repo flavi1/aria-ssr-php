@@ -1,6 +1,7 @@
 <?php
 use AriaML\AriaMLRequestFactory;
 use AriaML\AriaMLResponseFactory;
+use AriaML\AriaMLDocument;
 
 // 1. Les objets de base
 $reqFactory = new AriaMLRequestFactory(); 
