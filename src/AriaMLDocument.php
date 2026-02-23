@@ -3,22 +3,22 @@ namespace AriaML;
 
 class AriaMLDocument {
     
+    const JSON_TOKENS = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT;
     public $isFragment = false;
     public $expectedHtml = false;
     public $polyfillJS = 'ariaml/standalone.js';
     protected $definition = [];
-    protected $consumedDefinitionKeys = [];
+    protected $consumedKeysOf = [];
     protected $linkSingletons = ['author', 'license'];
     
-    protected $styles = []; 
-    protected $groupThemes = [];
+    protected $appearance = [];
 
     /**
      * @param array $definition Contenu du JSON-LD AriaML
      */
     public function __construct(array $definition = []) {
         if(!isset($definition["@context"]))
-            $definition["@context"] = ["[https://schema.org](https://schema.org)", "[https://ariaml.com/ns/](https://ariaml.com/ns/)"];
+            $definition["@context"] = ["https://schema.org", "https://ariaml.com/ns/"];
         if(!isset($definition["@type"]))
             $definition["@type"] = 'WebPage';
         
@@ -26,65 +26,18 @@ class AriaMLDocument {
     }
 
     /**
-     * Associe un thème par défaut à un groupId (nav-slot).
-     */
-    public function setThemeGroup(string $groupId, string $themeName): self {
-        $this->groupThemes[$groupId] = $themeName;
-        return $this;
-    }
-
-    /**
      * Enregistre un style ou une ressource JSON pour un rendu différé.
      */
-    public function addStyle($content, array $attrs = [], ?string $groupId = null): self {
-        $this->styles[] = [
-            'content' => $content,
-            'attrs'   => $attrs,
-            'group'   => $groupId
-        ];
+    public function addStyle(array $attrs = [], ?string $key = '0'): self {
+		if(!isset($this->appearance[$key])) $this->appearance[$key] = [];
+        $this->appearance[$key][] = $attrs;
         return $this;
-    }
-
-    /**
-     * Rend les styles filtrés par groupe, enveloppés dans un <g>.
-     */
-    public function renderStyles(?string $groupId = null): string {
-        $output = [];
-        $filtered = array_filter($this->styles, fn($s) => $s['group'] === $groupId);
-        
-        if (empty($filtered) && !$groupId) return "";
-
-        foreach ($filtered as $s) {
-            $content = $s['content'];
-            if (is_array($content)) {
-                $content = json_encode($content, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-            }
-
-            $tag = "\n" . $this->tag('style', $s['attrs']);
-            if (!isset($s['attrs']['src'])) {
-                $tag .= $content;
-            }
-            $tag .= "</style>";
-            $output[] = $tag;
-        }
-
-        $html = implode("", $output);
-        
-        if ($groupId) {
-            $attrs = ['nav-slot' => $groupId];
-            if (isset($this->groupThemes[$groupId])) {
-                $attrs['theme'] = $this->groupThemes[$groupId];
-            }
-            return "\n" . $this->tag('g', $attrs) . $html . "\n</g>";
-        }
-
-        return $html;
     }
 
     /**
      * Génère le HTML head complet pour le SSR.
      */
-    public function renderDefinitionHtmlHead(): string {
+    public function renderDefinitionInHtmlHead(): string {
         $d = $this->definition;
         $title = htmlspecialchars($d['name'] ?? '');
 
@@ -144,16 +97,18 @@ class AriaMLDocument {
 	 */
 	public function renderPreloadStyles(): string {
 		$preloads = [];
-		foreach ($this->styles as $s) {
-			if (isset($s['attrs']['src']) && isset($s['attrs']['preload'])) {
-				$href = $s['attrs']['src'];
-				// On évite les doublons de preload dans le head
-				if (!isset($preloads[$href])) {
-					$preloads[$href] = $this->tag('link', [
-						'rel' => 'preload',
-						'href' => $href,
-						'as' => 'style'
-					]);
+		foreach ($this->appearance as $group) {
+			foreach ($group as $s) {
+				// Dans addStyle, l'asset est directement le tableau d'attributs
+				if (isset($s['src']) && isset($s['preload'])) {
+					$href = $s['src'];
+					if (!isset($preloads[$href])) {
+						$preloads[$href] = $this->tag('link', [
+							'rel' => 'preload',
+							'href' => $href,
+							'as' => 'style'
+						]);
+					}
 				}
 			}
 		}
@@ -164,7 +119,7 @@ class AriaMLDocument {
 	 * Version finale du renderHtmlHead incluant le preload des assets critiques.
 	 */
 	public function renderHtmlHead(): string {
-		return $this->renderDefinitionHtmlHead() . $this->renderPreloadStyles();
+		return $this->renderInDefinitionHtmlHead() . $this->renderPreloadStyles();
 	}
 
     public function startTag($attrs = []) {
@@ -212,17 +167,71 @@ class AriaMLDocument {
         return $this;
     }
 
-    private function consumeDefinition($keys = null) {
-        if($keys == null) $keys = array_keys($this->definition);
-        $d = [];
-        foreach($keys as $k) {
-            if(!in_array($k, $this->consumedDefinitionKeys) && isset($this->definition[$k])) {
-                $d[$k] = $this->definition[$k];
-                $this->consumedDefinitionKeys[] = $k;
-            }
-        }
-        return json_encode($d, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    }
+    private function _consume($what, $keys = null, $indent) {
+		$subject = ($what == 'definition') ? $this->definition : $this->appearance;
+		if($keys == null)
+			$keys = array_keys($subject);
+		if(is_string($keys))
+			$keys = [$keys];
+		
+		$d = [];
+		foreach($keys as $k)
+			if(!in_array($k, $this->consumedKeysOf[$what]) && isset($subject[$k])) {
+				$d[$k] = $subject[$k];
+				$this->consumedKeysOf[$what][] = $k;
+			}
+		$m = 'render'.ucfirst($what, $indent);
+		return $this->$m($d);
+	}
+	
+	private function jsonEncode($arr, $tokens, $ident = 0) {
+		$json = json_encode($arr, $tokens);
+		if ($indent > 0) {
+			$spacer = str_repeat("\t", $indent);
+			$json = str_replace("\n", "\n" . $spacer, $json);
+			$json = $spacer . $json;
+		}
+		return $json;
+	}
+	
+	function renderDefinition($d, $indent = 0) {
+		return $this->jsonEncode($d, self::JSON_TOKENS, $ident);
+	}
+	
+    function consumeDefinition($keys = null, $indent = 0) {
+		return $this->_consume('definition', $keys, $indent);
+	}
+	
+	function renderAppearance($d, $indent = 0) {
+		$output = [];
+		foreach ($d as $group) {
+			foreach ($group as $s) {
+				$content = '';
+				if (isset($s['content'])) {
+					$rawContent = $s['content'];
+					if (is_array($rawContent)) {
+						// Indentation du JSON avec un cran supplémentaire (+1)
+						$content = "\n" . $this->jsonEncode($rawContent, self::JSON_TOKENS, $indent + 1) . "\n" . str_repeat("\t", $indent);
+					} else {
+						$content = $rawContent;
+					}
+					unset($s['content']); // Point-virgule ajouté
+				}
+
+				$tag = "\n" . str_repeat("\t", $indent) . $this->tag('style', $s);
+				if (!isset($s['src'])) {
+					$tag .= $content;
+				}
+				$tag .= "</style>";
+				$output[] = $tag;
+			}
+		}
+		return implode("", $output);
+	}
+	
+    function consumeAppearance($keys = null, $indent = 0) {
+		return $this->_consume('appearance', $keys, $indent);
+	}
 
     private function renderAttributes($attrs) {
         if (empty($attrs) || !is_array($attrs)) return '';

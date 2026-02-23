@@ -8,27 +8,49 @@ $doc = new AriaMLDocument([
     "name" => "Page Produit",
     "inLanguage" => "fr-FR",
     "direction" => "ltr",
-    "url" => "https://monsite.com/chaussures",
     "csrfToken" => "token-123"
+    "url" => "https://monsite.com/chaussures",
 ]);
 
 // Ajout de métadonnées OpenGraph (properties) et classiques (metadatas)
 $doc->set('properties', ['og:type' => 'product', 'og:image' => '/assets/shoes.jpg']);
 $doc->set('metadatas', ['robots' => 'index, follow']);
 
-// Ajout de ressources thématiques avec le nouveau système de PRELOAD
-$doc->addStyle(null, [
-    'src' => '/assets/themes/dark-mode.css',
+
+/* STATIC */
+// Ajout de ressources persistante avec le nouveau système de PRELOAD
+$doc->addStyle([
+    'src' => '/css/style.css',
     'theme' => 'dark',
     'preload' => true, // Sera rendu par $this->renderPreloadStyles()
     'media' => '(prefers-color-scheme: dark)'
-], 'appearance');
+], 'persistant');
 
-$doc->addStyle(null, [
-    'src' => '/assets/icons/main-pack.icons+json',
+// Ajout de ressources thématiques
+$doc->addStyle([
+    'src' => '/css/dark.css',
+    'theme' => 'dark',
+    'preload' => true,
+    'media' => '(prefers-color-scheme: dark)'
+], 'themes');
+$doc->addStyle([
+    'src' => '/css/light.css',
+    'theme' => 'light',
+    'preload' => true,
+    'media' => '(prefers-color-scheme: light)'
+], 'themes');
+
+
+/* DYNAMIC */
+$doc->addStyle([
+    'src' => '/css/icons.json',
     'type' => 'icons+json',
     'preload' => true
-], 'appearance');
+], 'icons');
+
+$doc->addStyle([
+	'content' => 'h1 {color: red;}'	// hors groupe
+]);
 
 // 2. Synchronisation globale (Headers + Document state)
 $respFactory = new AriaMLResponseFactory();
@@ -37,17 +59,22 @@ $respFactory->applyTo($reqFactory, $doc);
 // 3. Rendu (Le document sait maintenant s'il doit être un fragment ou non)
 echo $doc->startTag(['nav-base-url' => '/']); 
 ?>
-
-    <script type="application/ld+json" nav-slot="dynamic-definition">
-        <?= $doc->consumeDefinition(['name', 'inLanguage', 'direction']);	//dynamique, actualisé à chaque changement de contexte ?>
-    </script>
-	<?php if (!$reqFactory->isFragment()): ?>
-    <script type="application/ld+json">
-        <?= $doc->consumeDefinition(); // tout le reste ?>
-    </script>
+	
+	<script type="application/ld+json" nav-slot="dynamic-def">
+		<?= $doc->consumeDefinition(['name', 'inLanguage', 'direction', 'csrfToken']);	//dynamique, actualisé à chaque changement de contexte ?>
+	</script>
+    
+    <?php if (!$reqFactory->isFragment()): ?>
+    <g id="static">
+		<script type="application/ld+json"><?= $doc->consumeDefinition(); // tout le reste ?></script>
+		<?= $doc->consumeAppearance('persistant'); ?>
+		<?= $doc->consumeAppearance('themes'); ?>
+	</g>
 	<?php endif; ?>
 
-	<?= $doc->renderStyles(); ?>
+	<g nav-slot="dynamic-styles">
+		<?= $doc->consumeAppearance();	//tout le reste : icons + hors groupe ?>
+    </g>
 
     <main nav-slot="content">
         <?php if ($reqFactory->clientHasCache('main-view')): ?>
@@ -59,6 +86,6 @@ echo $doc->startTag(['nav-base-url' => '/']);
         <?php endif; ?>
     </main>
 
-<?php 
+<?php
 echo $doc->endTag(); 
 ?>
