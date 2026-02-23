@@ -1,6 +1,6 @@
 {
     "name": "ariaml/ariaml-ssr-php",
-    "description": "AriaML SSR Polyfill for PHP - Provides Request, Response, and Document orchestration for AriaML fluid navigation.",
+    "description": "AriaML Server Side Rendering Engine for PHP",
     "type": "library",
     "license": "MIT",
     "authors": [
