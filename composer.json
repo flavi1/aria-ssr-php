@@ -1,5 +1,5 @@
 {
-    "name": "ariaml/aria-ssr-php",
+    "name": "ariaml/ariaml-ssr-php",
     "description": "AriaML SSR Polyfill for PHP - Provides Request, Response, and Document orchestration for AriaML fluid navigation.",
     "type": "library",
     "license": "MIT",
