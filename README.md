@@ -11,7 +11,7 @@ This is the official PHP reference implementation for the **AriaML SSR Polyfill*
 ### Via Composer (Packagist)
 Once the package is published on Packagist, run:
 ```bash
-composer require ariaml/aria-ssr-php
+composer require ariaml/ariaml-ssr-php
 ```
 
 ### Via GitHub Directly
@@ -22,11 +22,11 @@ To use this library before it is published on Packagist, add the repository to y
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/your-username/aria-ssr-php"
+            "url": "https://github.com/flavi1/ariaml-ssr-php"
         }
     ],
     "require": {
-        "ariaml/aria-ssr-php": "dev-main"
+        "ariaml/ariaml-ssr-php": "dev-main"
     }
 }
 ```
@@ -143,7 +143,7 @@ Ceci est l'implémentation de référence officielle en PHP du **Polyfill SSR Ar
 ### Via Composer (Packagist)
 Une fois le paquet publié sur Packagist, exécutez :
 ```bash
-composer require ariaml/aria-ssr-php
+composer require ariaml/ariaml-ssr-php
 ```
 
 ### Via GitHub directement
@@ -154,11 +154,11 @@ Pour utiliser cette bibliothèque avant sa publication sur Packagist, ajoutez le
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/votre-nom-utilisateur/aria-ssr-php"
+            "url": "https://github.com/flavi1/ariaml-ssr-php"
         }
     ],
     "require": {
-        "ariaml/aria-ssr-php": "dev-main"
+        "ariaml/ariaml-ssr-php": "dev-main"
     }
 }
 ```
