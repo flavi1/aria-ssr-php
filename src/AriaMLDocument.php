@@ -7,11 +7,12 @@ class AriaMLDocument {
     public $isFragment = false;
     public $expectedHtml = false;
     public $polyfillJS = 'ariaml/standalone.js';
-    protected $definition = [];
-    protected $consumedKeysOf = [];
     protected $linkSingletons = ['author', 'license'];
-    
+    protected $definition = [];
     protected $appearance = [];
+    protected $consumedKeysOf = ['definition' => [], 'appearance' => []];
+    
+    
 
     /**
      * @param array $definition Contenu du JSON-LD AriaML

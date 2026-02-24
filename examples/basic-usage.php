@@ -9,7 +9,7 @@ $doc = new AriaMLDocument([
     "name" => "Page Produit",
     "inLanguage" => "fr-FR",
     "direction" => "ltr",
-    "csrfToken" => "token-123"
+    "csrfToken" => "token-123",
     "url" => "https://monsite.com/chaussures",
 ]);
 
