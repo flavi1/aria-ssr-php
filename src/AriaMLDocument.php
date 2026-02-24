@@ -6,7 +6,7 @@ class AriaMLDocument {
     const JSON_TOKENS = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT;
     public $isFragment = false;
     public $expectedHtml = false;
-    public $polyfillJS = 'ariaml/standalone.js';
+    public $polyfillJS = 'https://flavi1.github.io/aria-ml/src/standalone.js';
     protected $linkSingletons = ['author', 'license'];
     protected $definition = [];
     protected $appearance = [];
@@ -120,7 +120,7 @@ class AriaMLDocument {
 	 * Version finale du renderHtmlHead incluant le preload des assets critiques.
 	 */
 	public function renderHtmlHead(): string {
-		return $this->renderInDefinitionHtmlHead() . $this->renderPreloadStyles();
+		return $this->renderDefinitionInHtmlHead() . $this->renderPreloadStyles();
 	}
 
     public function startTag($attrs = []) {
@@ -129,7 +129,7 @@ class AriaMLDocument {
         $wrapper = '';
 
         if (!$this->isFragment && $this->expectedHtml) {
-            $wrapper = "<!DOCTYPE html>\n<html lang=\"{$lang}\" dir=\"{$dir}\">\n<head data-ssr>" . $this->renderHtmlHead() . "\n</head>\n<body>";
+            $wrapper = "<!DOCTYPE html>\n<html lang=\"{$lang}\" dir=\"{$dir}\">\n<head data-ssr>" . $this->renderHtmlHead() . "\n</head>\n<body>\n";
         }
 
         if ($this->isFragment) {
@@ -140,11 +140,13 @@ class AriaMLDocument {
             return $wrapper . "\n" . '<aria-ml-fragment' . $this->renderAttributes($attrs) . '>';
         }
 
-        return $wrapper . "\n" . '<aria-ml' . $this->renderAttributes($attrs) . '>';
+        return $wrapper . '<aria-ml' . $this->renderAttributes($attrs) . '>';
     }
 
     public function endTag() {
-        $jsonLd = "\n<script type=\"application/ld+json\">\n" . $this->consumeDefinition() . "\n</script>";
+		$jsonLd = '';
+		if(!$this->isFragment && count($this->definition) > count($this->consumedKeysOf['definition']))
+			$jsonLd = "\n<script type=\"application/ld+json\">\n" . $this->consumeDefinition() . "\n</script>";
         
         $footer = ($this->isFragment ? '</aria-ml-fragment>' : '</aria-ml>') . $jsonLd;
 
@@ -181,8 +183,8 @@ class AriaMLDocument {
 				$d[$k] = $subject[$k];
 				$this->consumedKeysOf[$what][] = $k;
 			}
-		$m = 'render'.ucfirst($what, $indent);
-		return $this->$m($d);
+		$m = 'render'.ucfirst($what);
+		return $this->$m($d, $indent);
 	}
 	
 	private function jsonEncode($arr, $tokens, $ident = 0) {
@@ -261,7 +263,10 @@ class AriaMLDocument {
         $html = "<{$name}";
         foreach ($attrs as $k => $v) {
             if ($v === null || $v === false) continue;
-            $html .= " {$k}=\"" . htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8') . "\"";
+            if($v === true)
+				$html .= ' '.$k;
+			else
+				$html .= " {$k}=\"" . htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8') . "\"";
         }
         return $html . ">";
     }

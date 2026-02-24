@@ -1,4 +1,10 @@
 <?php
+
+require_once __DIR__ . '/../src/AriaMLRequestFactory.php';
+require_once __DIR__ . '/../src/AriaMLResponseFactory.php';
+require_once __DIR__ . '/../src/AriaMLDocument.php';
+/* à remplacer par ../vendor/autoload.php dans vos projets */
+
 use AriaML\AriaMLRequestFactory;
 use AriaML\AriaMLResponseFactory;
 use AriaML\AriaMLDocument;
@@ -22,9 +28,7 @@ $doc->set('metadatas', ['robots' => 'index, follow']);
 // Ajout de ressources persistante avec le nouveau système de PRELOAD
 $doc->addStyle([
     'src' => '/css/style.css',
-    'theme' => 'dark',
     'preload' => true, // Sera rendu par $this->renderPreloadStyles()
-    'media' => '(prefers-color-scheme: dark)'
 ], 'persistant');
 
 // Ajout de ressources thématiques
@@ -82,7 +86,8 @@ echo $doc->startTag(['nav-base-url' => '/']);
             <div nav-cache="main-view"></div>
         <?php else: ?>
             <div nav-cache="main-view">
-                <h1>Contenu optimisé</h1>
+                <h1>Hello Word!</h1>
+                <p>This is my first AriaML Document</p>
             </div>
         <?php endif; ?>
     </main>
