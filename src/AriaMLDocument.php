@@ -31,7 +31,7 @@ class AriaMLDocument {
      */
     public function addStyle(array $attrs = [], ?string $key = '0'): self {
 		if(!isset($this->appearance[$key])) $this->appearance[$key] = [];
-		if(isset($attrs['src']) && !isset($attrs['theme']))
+		if((!isset($attrs['type']) || $attrs['type'] == "text/css") && isset($attrs['src']) && !isset($attrs['theme']))
 			$attrs['content'] = '@import url("'.$attrs['src'].'");';
         $this->appearance[$key][] = $attrs;
         return $this;
