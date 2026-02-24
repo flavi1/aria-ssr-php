@@ -31,6 +31,8 @@ class AriaMLDocument {
      */
     public function addStyle(array $attrs = [], ?string $key = '0'): self {
 		if(!isset($this->appearance[$key])) $this->appearance[$key] = [];
+		if(isset($attrs['src']) && !isset($attrs['theme']))
+			$attrs['content'] = '@import url("'.$attrs['src'].'");';
         $this->appearance[$key][] = $attrs;
         return $this;
     }
@@ -222,9 +224,8 @@ class AriaMLDocument {
 				}
 
 				$tag = "\n" . str_repeat("\t", $indent) . $this->tag('style', $s);
-				if (!isset($s['src'])) {
-					$tag .= $content;
-				}
+				$tag .= $content;
+				
 				$tag .= "</style>";
 				$output[] = $tag;
 			}

@@ -36,13 +36,13 @@ $doc->addStyle([
     'src' => '/css/dark.css',
     'theme' => 'dark',
     'preload' => true,
-    'media' => '(prefers-color-scheme: dark)'
+    'media-theme' => '(prefers-color-scheme: dark)'
 ], 'themes');
 $doc->addStyle([
     'src' => '/css/light.css',
     'theme' => 'light',
     'preload' => true,
-    'media' => '(prefers-color-scheme: light)'
+    'media-theme' => '(prefers-color-scheme: light)'
 ], 'themes');
 
 
@@ -72,8 +72,7 @@ echo $doc->startTag(['nav-base-url' => '/']);
     <?php if (!$reqFactory->isFragment()): ?>
     <g id="static">
 		<script type="application/ld+json"><?= $doc->consumeDefinition(); // tout le reste ?></script>
-		<?= $doc->consumeAppearance('persistant'); ?>
-		<?= $doc->consumeAppearance('themes'); ?>
+		<?= $doc->consumeAppearance(['persistant', 'themes']); ?>
 	</g>
 	<?php endif; ?>
 
