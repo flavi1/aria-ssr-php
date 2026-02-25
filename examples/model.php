@@ -111,6 +111,17 @@ echo $doc->startTag(['nav-base-url' => '/']);
         </template>
     </ul>
 </div>
+
+<script>
+	const el = document.getElementById('app')
+// 1. Initialisation du modèle (Transformation JSON -> XML)
+// On récupère le modèle via son ID ou par défaut
+const xmlModel = getXmlModel(el); 
+
+// 2. Lancement du cycle de rendu initial
+// Cette fonction va parcourir le DOM, gérer le 'each' et les 'ref'
+processBindings(el, xmlModel.documentElement);
+</script>
                 
             </div>
         <?php endif; ?>
